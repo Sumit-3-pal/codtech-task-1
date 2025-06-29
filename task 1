@@ -1,53 +1,107 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-void create_and_write_file(const char *filename) {
-    FILE *file = fopen(filename, "w"); // "w" mode creates or overwrites the file
+void createFile(char *filename) {
+    FILE *file = fopen(filename, "w");
     if (file == NULL) {
-        printf("Error creating file.\n");
+        printf("Could not create file %s.\n", filename);
         return;
     }
-    fprintf(file, "This is the first line in the file.\n");
     fclose(file);
-    printf("File created and data written successfully.\n");
+    printf("File %s created successfully.\n", filename);
 }
 
-void read_file(const char *filename) {
-    FILE *file = fopen(filename, "r"); // "r" mode to read file
-    char ch;
-
+void writeFile(char *filename, char *content) {
+    FILE *file = fopen(filename, "w");
     if (file == NULL) {
-        printf("File does not exist.\n");
+        printf("Could not open file %s for writing.\n", filename);
         return;
     }
+    fprintf(file, "%s\n", content);
+    fclose(file);
+    printf("Written to file %s successfully.\n", filename);
+}
 
-    printf("Reading File Content:\n");
-    while ((ch = fgetc(file)) != EOF) {
-        putchar(ch);
+void readFile(char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Could not open file %s for reading.\n", filename);
+        return;
     }
-
+    char buffer[100];
+    while (fgets(buffer, sizeof(buffer), file)) {
+        printf("%s", buffer);
+    }
     fclose(file);
 }
 
-void append_to_file(const char *filename) {
-    FILE *file = fopen(filename, "a"); // "a" mode appends to file
+void appendFile(char *filename, char *content) {
+    FILE *file = fopen(filename, "a");
     if (file == NULL) {
-        printf("Error opening file to append.\n");
+        printf("Could not open file %s for appending.\n", filename);
         return;
     }
-
-    fprintf(file, "This line was appended.\n");
+    fprintf(file, "%s\n", content);
     fclose(file);
-    printf("Data appended successfully.\n");
+    printf("Appended to file %s successfully.\n", filename);
+}
+
+void deleteFile(char *filename) {
+    if (remove(filename) == 0) {
+        printf("File %s deleted successfully.\n", filename);
+    } else {
+        printf("Could not delete file %s.\n", filename);
+    }
+}
+
+int fileExists(char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file != NULL) {
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
+long getFileSize(char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        return -1;
+    }
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fclose(file);
+    return size;
 }
 
 int main() {
-    const char *filename = "sample_file.txt";
+    char filename[] = "example.txt";
+    char content[] = "Hello, World!";
 
-    create_and_write_file(filename);
-    read_file(filename);
+    createFile(filename);
 
-    append_to_file(filename);
-    read_file(filename); // Read again to show appended data
+    writeFile(filename, content);
+
+    printf("File content:\n");
+    readFile(filename);
+
+    appendFile(filename, "Appended content.");
+
+    printf("File content after appending:\n");
+    readFile(filename);
+
+    if (fileExists(filename)) {
+        printf("File %s exists.\n", filename);
+    } else {
+        printf("File %s does not exist.\n", filename);
+    }
+
+    long size = getFileSize(filename);
+    if (size != -1) {
+        printf("File size: %ld bytes\n", size);
+    }
+
+    deleteFile(filename);
 
     return 0;
 }
